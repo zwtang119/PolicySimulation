@@ -1,9 +1,5 @@
 
 
-
-
-
-
 import React, { useState } from 'react';
 import { Card } from './common/Card';
 import { Button } from './common/Button';
@@ -63,10 +59,10 @@ ${(c.emergentPatterns || []).map((p, i) => `### 3.${i+1} ${p.patternName}\n${p.m
 
 ## 4. 产业结构展望与推演
 ### 4.1 新机会
-${(c.industryOutlook?.newOpportunities || []).map(o => `- ${o}`).join('\n')}
+${(Array.isArray(c.industryOutlook?.newOpportunities) ? c.industryOutlook.newOpportunities : []).map(o => `- ${o}`).join('\n')}
 
 ### 4.2 新风险
-${(c.industryOutlook?.newRisks || []).map(r => `- ${r}`).join('\n')}
+${(Array.isArray(c.industryOutlook?.newRisks) ? c.industryOutlook.newRisks : []).map(r => `- ${r}`).join('\n')}
 
 ### 4.3 市场结构预测
 ${c.industryOutlook?.marketStructurePrediction || "N/A"}
@@ -76,13 +72,13 @@ ${(c.microAnalysis || []).map((m, i) => `### 5.${i+1} ${m.companyName} (影响: 
 
 ## 6. 政策建议
 ### 6.1 即时建议（0–6个月）
-${(recs.immediate || []).map(r => `- **${r.action}**: ${r.rationale}`).join('\n')}
+${(Array.isArray(recs.immediate) ? recs.immediate : []).map(r => `- **${r.action}**: ${r.rationale}`).join('\n')}
 
 ### 6.2 中期建议（6–24个月）
-${(recs.midTerm || []).map(r => `- **${r.action}**: ${r.rationale}`).join('\n')}
+${(Array.isArray(recs.midTerm) ? recs.midTerm : []).map(r => `- **${r.action}**: ${r.rationale}`).join('\n')}
 
 ### 6.3 长期建议（24个月以上）
-${(recs.longTerm || []).map(r => `- **${r.action}**: ${r.rationale}`).join('\n')}
+${(Array.isArray(recs.longTerm) ? recs.longTerm : []).map(r => `- **${r.action}**: ${r.rationale}`).join('\n')}
 
 ## 附录：术语对照表
 | 原始术语 | 中文释义 |
@@ -122,9 +118,9 @@ ${(c.emergentPatterns || []).map((p, i) => `${i+1}. ${p.patternName}\n   机制:
 
 [4. 产业结构展望]
 * 新机会:
-${(c.industryOutlook?.newOpportunities || []).map(o => `  - ${o}`).join('\n')}
+${(Array.isArray(c.industryOutlook?.newOpportunities) ? c.industryOutlook.newOpportunities : []).map(o => `  - ${o}`).join('\n')}
 * 新风险:
-${(c.industryOutlook?.newRisks || []).map(r => `  - ${r}`).join('\n')}
+${(Array.isArray(c.industryOutlook?.newRisks) ? c.industryOutlook.newRisks : []).map(r => `  - ${r}`).join('\n')}
 * 市场结构预测: 
 ${c.industryOutlook?.marketStructurePrediction || "N/A"}
 
@@ -135,13 +131,13 @@ ${(c.microAnalysis || []).map((m, i) => `${i+1}. ${m.companyName} (影响: ${m.i
 
 [6. 政策建议]
 [即时建议 0-6月]
-${(recs.immediate || []).map(r => `* ${r.action}: ${r.rationale}`).join('\n')}
+${(Array.isArray(recs.immediate) ? recs.immediate : []).map(r => `* ${r.action}: ${r.rationale}`).join('\n')}
 
 [中期建议 6-24月]
-${(recs.midTerm || []).map(r => `* ${r.action}: ${r.rationale}`).join('\n')}
+${(Array.isArray(recs.midTerm) ? recs.midTerm : []).map(r => `* ${r.action}: ${r.rationale}`).join('\n')}
 
 [长期建议 24月+]
-${(recs.longTerm || []).map(r => `* ${r.action}: ${r.rationale}`).join('\n')}
+${(Array.isArray(recs.longTerm) ? recs.longTerm : []).map(r => `* ${r.action}: ${r.rationale}`).join('\n')}
 
 [附录: 术语对照]
 ${Object.entries(glossary).map(([k, v]) => `${k} = ${v}`).join('\n')}

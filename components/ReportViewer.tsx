@@ -1,6 +1,5 @@
 
 
-
 import React, { useMemo } from 'react';
 import { SimulationReport, AiStatus, Company } from '../types';
 import { Spinner } from './common/Spinner';
@@ -73,10 +72,10 @@ ${p.mechanism}
         const outlook = report.industryOutlook || { newOpportunities: [], newRisks: [], marketStructurePrediction: '' };
         const outlookText = `
 ### 4.1 新机会
-${(outlook.newOpportunities || []).map(o => `- ${o}`).join('\n')}
+${(Array.isArray(outlook.newOpportunities) ? outlook.newOpportunities : []).map(o => `- ${o}`).join('\n')}
 
 ### 4.2 新风险
-${(outlook.newRisks || []).map(r => `- ${r}`).join('\n')}
+${(Array.isArray(outlook.newRisks) ? outlook.newRisks : []).map(r => `- ${r}`).join('\n')}
 
 ### 4.3 市场结构预测
 ${outlook.marketStructurePrediction || "N/A"}
@@ -94,13 +93,13 @@ ${outlook.marketStructurePrediction || "N/A"}
         const recs = report.policyRecommendations || { immediate: [], midTerm: [], longTerm: [] };
         const recText = `
 ### 6.1 即时建议（0–6个月）
-${(recs.immediate || []).map(r => `- **${r.action}**: ${r.rationale}`).join('\n')}
+${(Array.isArray(recs.immediate) ? recs.immediate : []).map(r => `- **${r.action}**: ${r.rationale}`).join('\n')}
 
 ### 6.2 中期建议（6–24个月）
-${(recs.midTerm || []).map(r => `- **${r.action}**: ${r.rationale}`).join('\n')}
+${(Array.isArray(recs.midTerm) ? recs.midTerm : []).map(r => `- **${r.action}**: ${r.rationale}`).join('\n')}
 
 ### 6.3 长期建议（24个月以上）
-${(recs.longTerm || []).map(r => `- **${r.action}**: ${r.rationale}`).join('\n')}
+${(Array.isArray(recs.longTerm) ? recs.longTerm : []).map(r => `- **${r.action}**: ${r.rationale}`).join('\n')}
         `.trim();
 
         // 附录：术语表

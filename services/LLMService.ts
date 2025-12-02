@@ -1,6 +1,5 @@
 
 
-
 import { EnterpriseDNA, SimulationReport, SimulationTurn } from "../types";
 
 // --- Zhipu AI (GLM) Constants ---
@@ -249,8 +248,6 @@ export const runSimulationTurn = async (
 3. **博弈**: 竞争对手（如列表中的其他企业）会怎么做？我该激进还是防守？
 4. **决策**: 从标准动作库中选择行动。
 
-### 输出要求：正文全部使用中文表达。所有内部策略标签或英文术语必须在首次出现时给出中文翻译并在括号内保留原始英文（如：研发冲刺（R&DSurge）），随后仅使用中文表述；禁止在正文中出现驼峰、下划线或未翻译的英文标签。报告末尾附‘术语对照表’列出原始标签与中文映射。
-
 ### 输出 Schema
 \`\`\`json
 { 
@@ -385,7 +382,8 @@ export const generateFinalReport = async (
         "longTerm": [{ "action": "string", "rationale": "string" }]
     },
     "glossary": {
-        "Original_Code": "中文翻译"
+        "R&D_Surge": "研发冲刺",
+        "Term_Code_Key": "Term_Chinese_Name" 
     }
 }`;
 
@@ -428,6 +426,7 @@ ${JSON.stringify(history.map(h => ({
     );
 
     const json = extractJson(content);
+    // 确保 turnHistory 被正确赋值，虽然 JSON 中不包含它，但 SimulationReport 类型需要它
     json.turnHistory = history;
     return json;
 };
