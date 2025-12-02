@@ -1,0 +1,36 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main ] # 确保这里与您的主分支名称一致 (main 或 master)
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ⚙️
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          # cache: 'npm' #以此行注释掉，避免因缺少 package-lock.json 导致的报错
+
+      - name: Install Dependencies 🔧
+        run: npm install
+
+      - name: Build 🏗️
+        run: npm run build
+        env:
+          # 将 GitHub Secrets 注入到构建环境中
+          VITE_API_KEY: ${{ secrets.VITE_API_KEY }}
+
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: dist
+          branch: gh-pages
