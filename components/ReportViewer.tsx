@@ -1,4 +1,5 @@
 
+
 import React, { useMemo } from 'react';
 import { SimulationReport, AiStatus, Company } from '../types';
 import { Spinner } from './common/Spinner';
@@ -45,6 +46,45 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({ report, status, erro
     const markdownContent = useMemo(() => {
         if (!report) return '';
         
+        // 处理 Executive Summary
+        const summary = report.executiveSummary;
+        let summaryText = summary?.verdict ? `### 总体评价：${summary.verdict}\n\n` : '';
+        if (summary?.key_takeaways) {
+            summaryText += summary.key_takeaways.map(k => `- **${k.conclusion}** (置信度: ${k.confidence})\n  > 证据: ${k.evidence_ref}`).join('\n');
+        } else if (typeof summary === 'string') {
+             summaryText = summary;
+        } else {
+             summaryText = "暂无内容";
+        }
+
+        // 处理 Risk Matrix
+        const risks = report.riskMatrix;
+        let riskText = "";
+        if (risks) {
+            riskText = `
+**行为风险**:
+${(risks.behavioral_risks || []).map(r => `- ${r}`).join('\n')}
+
+**结构风险**:
+${(risks.structural_risks || []).map(r => `- ${r}`).join('\n')}
+
+**安全风险**:
+${(risks.security_risks || []).map(r => `- ${r}`).join('\n')}
+            `.trim();
+        } else {
+            riskText = "暂无风险数据";
+        }
+
+        // 处理 Recommendations
+        const recommendations = report.policyRecommendations || [];
+        let recText = recommendations.map(r => `
+### ${r.action_item}
+- **针对对象**: ${r.target_group}
+- **紧迫性**: ${r.urgency}
+- **理由**: ${r.rationale}
+        `).join('\n');
+
+
         return `
 # ${report.title || "政策仿真推演评估专报"}
 
@@ -52,7 +92,7 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({ report, status, erro
 
 ## 1. 总体研判 (Executive Summary)
 
-${report.executiveSummary || "暂无内容"}
+${summaryText}
 
 ## 2. 实施效能与微观响应 (Mechanism & Response)
 
@@ -64,7 +104,22 @@ ${report.executiveSummary || "暂无内容"}
 
 ${(report.emergentPatterns || []).map(p => `### ${p.patternName}\n\n${p.analysis}`).join('\n\n')}
 
-## 4. 中长期发展态势研判 (Future Outlook)
+## 4. 风险矩阵 (Risk Matrix)
+
+${riskText}
+
+## 5. 重点主体行为策略监测 (Micro Analysis)
+
+${(report.microAnalysis || []).map(m => `### ${m.companyName} (影响评分: ${m.impactScore})
+
+- **预测反应**: ${m.predictedResponse}
+- **分析原理**: ${m.rationale}`).join('\n\n')}
+
+## 6. 决策建议 (Action Plan)
+
+${recText || "暂无建议"}
+
+## 7. 中长期发展态势研判 (Future Outlook)
 
 **潜在结构性风险**:
 
@@ -77,13 +132,6 @@ ${(report.industryOutlook?.newOpportunities || []).map(o => `- ${o}`).join('\n')
 **终局格局推演**:
 
 ${report.industryOutlook?.marketStructurePrediction || "N/A"}
-
-## 5. 重点主体行为策略监测 (Micro Analysis)
-
-${(report.microAnalysis || []).map(m => `### ${m.companyName} (影响评分: ${m.impactScore})
-
-- **预测反应**: ${m.predictedResponse}
-- **分析原理**: ${m.rationale}`).join('\n\n')}
 `.trim();
     }, [report]);
 
