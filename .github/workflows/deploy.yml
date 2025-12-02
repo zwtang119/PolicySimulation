@@ -1,0 +1,40 @@
+name: Deploy to GitHub Pages
+
+on:
+  # 当代码推送到 main 分支时触发构建
+  push:
+    branches: [ main ] 
+    # 如果您的主分支叫 master，请把上面改成 [ master ]
+
+permissions:
+  contents: write # 允许 Action 推送代码到 gh-pages 分支
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ⚙️
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies 🔧
+        run: npm install
+
+      - name: Build 🏗️
+        run: npm run build
+        env:
+          # --- 关键步骤 ---
+          # 这里读取您在 GitHub Settings 里配置的 Secret
+          # 并将其注入到 Vite 的构建环境中
+          VITE_API_KEY: ${{ secrets.VITE_API_KEY }}
+
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: dist        # Vite 默认构建输出目录是 dist
+          branch: gh-pages    # 将构建结果推送到 gh-pages 分支
