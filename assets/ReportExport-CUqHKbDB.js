@@ -1,4 +1,4 @@
-import{u as v,r as x,j as t,B as k}from"./index-3AcpJkId.js";import{C as N}from"./Card-B4FjYln4.js";const S=()=>{const{reports:c}=v(),[i,d]=x.useState([]),[u,p]=x.useState(!1),[l,$]=x.useState("md"),y=a=>{i.includes(a)?d(i.filter(e=>e!==a)):d([...i,a])},g=()=>{i.length===c.length?d([]):d(c.map(a=>a.id))},f=a=>{const e=a.content;let r="";e.executiveSummary&&(r=`### 总体评价：${e.executiveSummary.verdict}
+import{u as v,r as x,j as t,B as k}from"./index-B16nCZFz.js";import{C as N}from"./Card-D-3xkEf6.js";const S=()=>{const{reports:c}=v(),[i,d]=x.useState([]),[u,p]=x.useState(!1),[l,$]=x.useState("md"),y=a=>{i.includes(a)?d(i.filter(e=>e!==a)):d([...i,a])},g=()=>{i.length===c.length?d([]):d(c.map(a=>a.id))},f=a=>{const e=a.content;let r="";e.executiveSummary&&(r=`### 总体评价：${e.executiveSummary.verdict}
 
 `,e.executiveSummary.key_takeaways&&(r+=e.executiveSummary.key_takeaways.map(n=>`- **${n.conclusion}** (置信度: ${n.confidence})
   > 证据: ${n.evidence_ref}`).join(`
