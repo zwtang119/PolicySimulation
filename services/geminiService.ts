@@ -425,7 +425,7 @@ export const aggregateSimulationResults = async (history: SimulationTurn[]): Pro
     return new Promise(resolve => setTimeout(() => resolve({ status: "aggregated" }), 200));
 };
 
-// 5. Final Report with Streaming
+// 5. Final Report with Streaming (Optimized with Dynamic Level Detection)
 export const generateFinalReport = async (
     policyText: string, 
     companies: any[], 
@@ -451,64 +451,135 @@ export const generateFinalReport = async (
 
     const historyContext = JSON.stringify(history, null, 2);
 
-    const systemInstruction = `你是指挥部的一位高级政策研究员。
-你的任务是基于计算机仿真的推演数据，撰写一份《政策仿真推演评估专报》。
+    // --- 动态层级判断逻辑 (开始) ---
+    let level: 'national' | 'provincial' | 'municipal' = 'provincial'; // 默认为省级
+    const textSample = policyText.substring(0, 1000);
+    if (textSample.includes('国家') || textSample.includes('国务院') || textSample.includes('部') || textSample.includes('中央')) {
+        level = 'national';
+    } else if (textSample.includes('市') || textSample.includes('区') || textSample.includes('县')) {
+        level = 'municipal';
+    }
+    // --- 动态层级判断逻辑 (结束) ---
 
+    // --- 差异化角色设定 (System Instruction) ---
+    const roleDefinitions = {
+        national: `你是指挥部最高战略顾问。你的核心视角是**“国家安全与体系效能”**。
+请站在**航天强国**的高度，重点评估政策对**供应链自主可控、国际博弈能力、全国资源统筹**的影响。
+你的语言要宏大、稳健、政治站位高。`,
+        
+        provincial: `你是省政府的首席产业策略官。你的核心视角是**“区域竞争与产业集聚”**。
+请站在**全省GDP与招商引资**的角度，重点评估政策能否从周边省份**抢夺龙头企业**，能否形成**本地产业链闭环**。
+你的语言要进取、强调比较优势。`,
+        
+        municipal: `你是市长的经济顾问与招商局专家。你的核心视角是**“项目落地与要素保障”**。
+请站在**财政投入产出比**的角度，重点评估政策条款对企业**拿地、建厂、税收**的实际吸引力。
+你的语言要务实、具体、关注执行细节。`
+    };
+
+    const systemInstruction = `${roleDefinitions[level]}
+    
+你的任务是基于“多智能体博弈仿真”日志，撰写一份**《政策仿真推演评估专报》**（内参）。
 **核心原则**：
-1. **决策导向**：不要写成会议纪要。报告目的是辅助决策，必须回答：政策是否有效？有什么副作用？应该怎么改？
-2. **数据支撑**：所有观点必须基于输入的“博弈历史”数据。
-3. **风格犀利**：使用“倒逼”、“传导”、“虹吸效应”、“结构性矛盾”等专业术语。
-4. **格式规范**：严格按照 JSON 结构输出。`;
+1. **问题导向**：不歌功颂德。重点揭示仿真中暴露的“合成谬误”、“政策套利”等风险。
+2. **数据支撑**：所有观点必须基于“博弈演化日志”中的具体企业行为。
+3. **格式规范**：严格按照要求的 JSON 结构输出。`;
+
+    // --- 差异化分析任务 (User Prompt) ---
+    const taskDefinitions = {
+        national: `
+1. **国家战略一致性**：企业的微观行为是否符合“新质生产力”与“航天强国”的顶层设计？
+2. **系统性风险**：是否存在技术路线单一化风险？关键供应链是否仍有对外依赖？
+3. **终局预判**：是否形成了有利于参与国际竞争的“航天国家队+商业独角兽”格局？`,
+
+        provincial: `
+1. **区域吸引力**：本省政策相比竞争省份（如周边省份），对头部企业是否有足够吸引力？
+2. **产业链缺口**：仿真中暴露出本省产业链还缺哪些环节（如缺发动机制造、缺测控）？
+3. **终局预判**：能否实现“千亿级产业集群”的目标？还是会出现“有项目无产业”的空心化？`,
+
+        municipal: `
+1. **政策实效性**：具体的补贴条款（如房租减免、首台套）是否真的触动了企业的投资决策？
+2. **落地痛点**：企业在仿真中是否表现出对用地、人才公寓、能耗指标的顾虑？
+3. **终局预判**：未来3年预计能落地多少家实体企业？税收贡献如何？`
+    };
 
     const prompt = `
-# 仿真输入
-- **政策底稿**: 
+# 1. 仿真输入数据
+**[A] 政策底稿 (节选)**: 
 """
-${policyText.substring(0, 5000)}...
+${policyText.substring(0, 3000)}...
 """
-- **参演企业**: ${companies.map(c => c.name).join(', ')}
-- **博弈演化日志**: 
+
+**[B] 参演主体**: 
+${companies.map(c => `- ${c.name} [类型:${c.dna?.archetype}]`).join('\n')}
+
+**[C] 博弈演化日志**: 
 ${historyContext}
 
-# 报告撰写任务
-请基于博弈日志，对政策进行“压力测试”评估，并生成 JSON 格式的报告。
+# 2. 深度思考任务 (Deep Thinking Chain)
+请基于你的角色（${level === 'national' ? '国家顾问' : level === 'provincial' ? '省级策略官' : '市级顾问'}），重点执行以下推演：
+${taskDefinitions[level]}
 
-# 输出要求 (JSON Schema)
-请严格匹配以下字段：
+# 3. 报告撰写要求 (JSON Schema)
+请严格按照以下 JSON 结构输出。**字符串字段建议使用 Markdown 格式（加粗、列表）以增强可读性。**
 
+\`\`\`json
 {
-  "title": "string",
-  "executiveSummary": "string",
+  "title": "主标题：需体现公文规范（如：关于《[政策名]》实施效果的仿真推演与风险预警专报）",
+  "executiveSummary": "【决策摘要】300字以内。直击要害。包含：核心定性判断（优/良/中/差）、关键量化预测、最大风险点。",
   "policyEffectiveness": { 
-      "goalAlignment": "string", 
-      "impactStrength": "string", 
-      "unintendedConsequences": "string" 
+      "goalAlignment": "【目标契合度】。分析政策指挥棒是否有效传导。", 
+      "impactStrength": "【政策效能】。政策是否改变了企业的惯性轨道？", 
+      "unintendedConsequences": "【非预期效应监测】（关键）。揭示仿真中涌现的副作用。" 
   },
-  "emergentPatterns": [{ "patternName": "string", "analysis": "string" }],
+  "emergentPatterns": [
+      { 
+          "patternName": "模式名称（如：‘资源向头部集中的马太效应’）", 
+          "analysis": "深度解析：该模式是如何在微观互动中涌现的？对${level === 'national' ? '国家' : '区域'}生态意味着什么？" 
+      }
+  ],
   "industryOutlook": { 
-      "emergingRisks": ["string"], 
-      "newOpportunities": ["string"], 
-      "marketStructurePrediction": "string" 
+      "emergingRisks": [
+          "风险点1...", 
+          "风险点2..."
+      ], 
+      "newOpportunities": [
+          "机遇点1...", 
+          "机遇点2..."
+      ], 
+      "marketStructurePrediction": "终局画像。预测未来的市场竞争格局。" 
   },
-  "microAnalysis": [{ 
-      "companyId": "string", 
-      "companyName": "string", 
-      "impactScore": number, // -10 to 10
-      "predictedResponse": "string", 
-      "rationale": "string" 
-  }]
+  "microAnalysis": [
+      { 
+          "companyId": "对应输入中的id", 
+          "companyName": "企业名称", 
+          "impactScore": number, // 评分标准：+10(受益最大) ~ 0(无感) ~ -10(受损/出局)
+          "predictedResponse": "基于日志的核心战术总结。", 
+          "rationale": "归因诊断。结合企业DNA和政策激励，解释其行为逻辑。" 
+      }
+  ]
 }
+\`\`\`
 `;
+
     try {
         // Stream calling via GLM
+        // 开启 thinking: true 以激活 GLM-4.6 的深度思考能力
         const fullText = await callGLM([
             { role: "system", content: systemInstruction },
             { role: "user", content: prompt }
         ], { stream: true, thinking: true }, onStream);
 
-        const report = JSON.parse(cleanJson(fullText));
-        report.turnHistory = history; 
-        return report;
+        const cleanedText = cleanJson(fullText);
+        
+        try {
+            const report = JSON.parse(cleanedText);
+            report.turnHistory = history; 
+            return report;
+        } catch (parseError) {
+            console.error("JSON Parse Failed. Raw text:", fullText);
+            throw new Error("模型生成了非法的 JSON 格式，请重试。");
+        }
+
     } catch (e) {
         console.error("Report Gen Error", e);
         return getMockFinalReport(history);
