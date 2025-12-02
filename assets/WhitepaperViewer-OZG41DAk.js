@@ -1,4 +1,4 @@
-import{r as p,j as e}from"./index-BB6b09wg.js";import{M as b}from"./MarkdownRenderer-DfT_zI-Y.js";const $=`
+import{r as p,j as e}from"./index-DVDMW9Fx.js";import{M as b}from"./MarkdownRenderer-CbW4ssrI.js";const $=`
 # 卷一：战略总论与体系概览
 
 ---
