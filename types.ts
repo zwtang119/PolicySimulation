@@ -36,6 +36,7 @@ export type AppAction =
 export enum AiStatus {
     Ready = 'Ready',
     GeneratingDna = 'GeneratingDna',
+    GeneratingBatchDna = 'GeneratingBatchDna', // 批处理 DNA 生成状态
     // New 5-Step Pipeline
     PolicyParsing = 'PolicyParsing',                 // 1. 读取政策数据
     DnaLoading = 'DnaLoading',                       // 2. 读取企业战略画像

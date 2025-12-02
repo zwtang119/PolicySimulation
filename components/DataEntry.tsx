@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card } from './common/Card';
 import { Button } from './common/Button';
@@ -8,14 +7,13 @@ import { useData } from '../contexts/DataContext';
 import { Skeleton } from './common/Skeleton';
 
 export const DataEntry: React.FC = () => {
-    const { companies, addCompany, generateDna, removeCompany, aiStatus } = useData();
+    const { companies, addCompany, generateDna, generateAllDnas, removeCompany, aiStatus, batchStatus } = useData();
     const [inputUrl, setInputUrl] = useState('');
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [fileUploaded, setFileUploaded] = useState(false);
-    const [isLoadingData, setIsLoadingData] = useState(true); // 模拟初始数据加载
+    const [isLoadingData, setIsLoadingData] = useState(true);
 
-    // 模拟组件挂载时的数据读取延迟
     useEffect(() => {
         const timer = setTimeout(() => setIsLoadingData(false), 600);
         return () => clearTimeout(timer);
@@ -52,28 +50,16 @@ export const DataEntry: React.FC = () => {
                         <Skeleton height={100} />
                     </div>
                 </Card>
-                <div className="bg-white rounded-lg shadow overflow-hidden p-6">
-                    <div className="space-y-4">
-                        {[1, 2, 3, 4].map(i => (
-                            <div key={i} className="flex items-center justify-between">
-                                <Skeleton width="30%" height={24} />
-                                <Skeleton width="20%" height={24} />
-                                <Skeleton width="10%" height={24} />
-                                <Skeleton width="15%" height={32} />
-                            </div>
-                        ))}
-                    </div>
-                </div>
             </div>
         );
     }
 
+    const missingDnaCount = companies.filter(c => !c.dna).length;
+
     return (
         <div className="space-y-6 animate-fade-in">
-            {/* Top Section: Data Input */}
             <Card title="行业数据录入">
                 <div className="flex flex-col space-y-6">
-                    {/* Company Tags Input */}
                     <div>
                         <label className="block text-sm font-bold text-gray-700 mb-3">* 录入企业 (输入名称或URL并回车)</label>
                         <div className="border border-gray-300 rounded-md p-2 flex flex-wrap gap-2 bg-white min-h-[50px]">
@@ -94,10 +80,8 @@ export const DataEntry: React.FC = () => {
                                 placeholder="输入企业名称..."
                             />
                         </div>
-                        <p className="text-xs text-gray-400 mt-1">提示: 可以在此快速添加多家企业，或在下方表格管理。</p>
                     </div>
 
-                    {/* File Upload Simulation */}
                     <div>
                         <label className="block text-sm font-bold text-gray-700 mb-3">文件上传 (行业报告/白皮书)</label>
                         <div 
@@ -134,10 +118,31 @@ export const DataEntry: React.FC = () => {
                 </div>
             </Card>
 
-            {/* Data Table */}
+            {/* Batch Status Panel */}
+            {aiStatus === AiStatus.GeneratingBatchDna && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-between animate-pulse">
+                    <div className="flex items-center space-x-3">
+                        <Spinner size="md" />
+                        <div>
+                            <h4 className="text-sm font-bold text-blue-800">批处理任务运行中 (GLM-4-Flash Batch API)</h4>
+                            <p className="text-xs text-blue-600 mt-1">{batchStatus}</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="bg-white rounded-lg shadow overflow-hidden">
                 <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
                     <h3 className="text-sm font-bold text-gray-700">已录入企业列表 ({companies.length})</h3>
+                    {missingDnaCount > 0 && (
+                        <Button 
+                            onClick={generateAllDnas}
+                            disabled={aiStatus === AiStatus.GeneratingBatchDna || aiStatus === AiStatus.GeneratingDna}
+                            className="bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm text-xs px-3"
+                        >
+                            ⚡ 一键批量生成DNA (待处理: {missingDnaCount})
+                        </Button>
+                    )}
                 </div>
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
@@ -172,7 +177,7 @@ export const DataEntry: React.FC = () => {
                                         <button 
                                             onClick={() => generateDna(company.id)} 
                                             className="text-blue-600 hover:text-blue-900 disabled:opacity-50"
-                                            disabled={aiStatus === AiStatus.GeneratingDna}
+                                            disabled={aiStatus !== AiStatus.Ready}
                                         >
                                             生成DNA
                                         </button>
