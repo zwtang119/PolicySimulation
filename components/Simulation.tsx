@@ -301,11 +301,11 @@ export const Simulation: React.FC = () => {
 
                         <div className="mt-auto">
                             <Button 
-                                className="w-full bg-slate-900 text-black h-12 text-lg disabled:bg-slate-300 disabled:cursor-not-allowed shadow-md"
+                                className="w-full bg-slate-900 text-white h-12 text-lg disabled:bg-slate-300 disabled:cursor-not-allowed shadow-md"
                                 onClick={() => runSimulation(policyText, simulationDepth)}
                                 disabled={isLoading || !policyText || selectedCompanyIds.length === 0}
                             >
-                                {isLoading ? <><Spinner className="mr-2 text-black" /> 计算中 ({Math.round(simulationProgress)}%)...</> : '开始运行仿真'}
+                                {isLoading ? <><Spinner className="mr-2 text-white" /> 计算中 ({Math.round(simulationProgress)}%)...</> : '开始运行仿真'}
                             </Button>
                         </div>
                     </div>
@@ -314,3 +314,5 @@ export const Simulation: React.FC = () => {
         </div>
     );
 };
+
+

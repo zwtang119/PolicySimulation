@@ -138,7 +138,7 @@ export const DataEntry: React.FC = () => {
                         <Button 
                             onClick={generateAllDnas}
                             disabled={aiStatus === AiStatus.GeneratingBatchDna || aiStatus === AiStatus.GeneratingDna}
-                            className="bg-indigo-600 !text-white  hover:bg-indigo-700 shadow-sm text-xs px-3"
+                            className="bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm text-xs px-3"
                         >
                             ⚡ 一键批量生成DNA (待处理: {missingDnaCount})
                         </Button>

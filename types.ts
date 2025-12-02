@@ -116,48 +116,46 @@ export interface SimulationTurn {
 
 export interface SimulationReport {
     title: string;
-    // [Updated] 结构化摘要
-    executiveSummary: {
-        verdict: string; // 高效/有效/低效
-        key_takeaways: {
-            conclusion: string;
-            evidence_ref: string;
-            confidence: "High" | "Medium" | "Low";
-        }[];
-    };
+    // 1. 核心结论摘要
+    executiveSummary: string; // 决策者三句话版本
+    
+    // 2. 政策目标匹配度评估
     policyEffectiveness: {
-        goalAlignment: string;
-        impactStrength: string;
-        unintendedConsequences: string;
+        alignment: string; // 目标对齐度
+        impactStrength: string; // 政策影响强度
+        deviations: string; // 非预期效应与偏差
     };
+
+    // 3. 趋势模式 (Emergent Patterns)
     emergentPatterns: {
         patternName: string;
-        analysis: string;
+        mechanism: string; // 产生原因 -> 影响路径 -> 启示
     }[];
-    // [New] 风险矩阵
-    riskMatrix: {
-        behavioral_risks: string[]; // 行为风险
-        structural_risks: string[]; // 结构风险
-        security_risks: string[];   // 安全风险
-    };
+
+    // 4. 产业结构展望与推演
     industryOutlook: {
-        emergingRisks: string[];
         newOpportunities: string[];
-        marketStructurePrediction: string; // 市场格局预测
+        newRisks: string[];
+        marketStructurePrediction: string;
     };
+
+    // 5. 企业微观分析
     microAnalysis: {
-        companyId: string;
         companyName: string;
-        impactScore: number;
-        predictedResponse: string;
-        rationale: string;
+        impactScore: number; // 0-10
+        behaviorAnalysis: string; // 推演行为
+        policyImplication: string; // 政策含义
     }[];
-    // [New] 政策建议
+
+    // 6. 政策建议 (分层)
     policyRecommendations: {
-        action_item: string;
-        target_group: string;
-        urgency: "High" | "Medium" | "Low";
-        rationale: string;
-    }[];
+        immediate: { action: string; rationale: string }[]; // 0-6个月
+        midTerm: { action: string; rationale: string }[];   // 6-24个月
+        longTerm: { action: string; rationale: string }[];  // 24个月以上
+    };
+
+    // 附录：术语对照表
+    glossary: Record<string, string>;
+
     turnHistory: SimulationTurn[];
 }

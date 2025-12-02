@@ -4,37 +4,10 @@ import { generateCompanyDna, runSimulationTurn, generateFinalReport, analyzePoli
 
 // 初始 Mock 数据
 const initialCompanies: Company[] = [
-    // --- 中国 (China) ---
     { id: 'cn-1', url: 'https://www.landspace.com', name: '蓝箭航天 (LandSpace)', country: '中国', createdDate: '2023-10-25', dna: null, isGenerating: false },
     { id: 'cn-2', url: 'https://www.i-space.com.cn', name: '星际荣耀 (i-Space)', country: '中国', createdDate: '2023-11-12', dna: null, isGenerating: false },
     { id: 'cn-3', url: 'http://www.galactic-energy.cn', name: '星河动力 (Galactic Energy)', country: '中国', createdDate: '2024-01-15', dna: null, isGenerating: false },
-    { id: 'cn-4', url: 'http://www.cas-space.com', name: '中科宇航 (CAS Space)', country: '中国', createdDate: '2024-02-20', dna: null, isGenerating: false },
-    { id: 'cn-5', url: 'https://www.deepblueaerospace.com', name: '深蓝航天 (Deep Blue)', country: '中国', createdDate: '2024-03-05', dna: null, isGenerating: false },
-    { id: 'cn-6', url: 'https://www.orienspace.com', name: '东方空间 (Orienspace)', country: '中国', createdDate: '2024-03-10', dna: null, isGenerating: false },
-    { id: 'cn-7', url: 'http://www.expace.com', name: '航天科工火箭 (ExPace)', country: '中国', createdDate: '2023-12-01', dna: null, isGenerating: false },
-    { id: 'cn-8', url: 'https://www.minospace.com', name: '微纳星空 (MinoSpace)', country: '中国', createdDate: '2024-01-20', dna: null, isGenerating: false },
-    { id: 'cn-9', url: 'https://www.yinhe.kr', name: '银河航天 (GalaxySpace)', country: '中国', createdDate: '2024-03-15', dna: null, isGenerating: false },
-    { id: 'cn-10', url: 'https://www.charmingglobe.com', name: '长光卫星 (Chang Guang Satellite)', country: '中国', createdDate: '2024-03-18', dna: null, isGenerating: false },
-
-    // --- 美国 (USA) ---
     { id: 'us-1', url: 'https://www.spacex.com', name: 'SpaceX', country: '美国', createdDate: '2023-09-01', dna: null, isGenerating: false },
-    { id: 'us-2', url: 'https://www.blueorigin.com', name: 'Blue Origin', country: '美国', createdDate: '2023-09-15', dna: null, isGenerating: false },
-    { id: 'us-3', url: 'https://www.virgingalactic.com', name: 'Virgin Galactic', country: '美国', createdDate: '2023-10-01', dna: null, isGenerating: false },
-    { id: 'us-4', url: 'https://www.rocketlabusa.com', name: 'Rocket Lab', country: '美国', createdDate: '2023-09-20', dna: null, isGenerating: false },
-    { id: 'us-5', url: 'https://www.relativityspace.com', name: 'Relativity Space', country: '美国', createdDate: '2023-11-05', dna: null, isGenerating: false },
-    { id: 'us-6', url: 'https://www.sierraspace.com', name: 'Sierra Space', country: '美国', createdDate: '2023-12-12', dna: null, isGenerating: false },
-    { id: 'us-7', url: 'https://www.planet.com', name: 'Planet Labs', country: '美国', createdDate: '2023-08-15', dna: null, isGenerating: false },
-    { id: 'us-8', url: 'https://www.astra.com', name: 'Astra', country: '美国', createdDate: '2024-01-08', dna: null, isGenerating: false },
-
-    // --- 欧洲 (Europe) ---
-    { id: 'eu-1', url: 'https://www.arianespace.com', name: 'Arianespace', country: '欧洲', createdDate: '2023-07-10', dna: null, isGenerating: false },
-    { id: 'eu-2', url: 'https://www.oneweb.net', name: 'Eutelsat OneWeb', country: '欧洲', createdDate: '2023-08-22', dna: null, isGenerating: false },
-    { id: 'eu-3', url: 'https://www.isaraerospace.com', name: 'Isar Aerospace', country: '欧洲', createdDate: '2024-02-15', dna: null, isGenerating: false },
-    { id: 'eu-4', url: 'https://www.pldspace.com', name: 'PLD Space', country: '欧洲', createdDate: '2024-03-01', dna: null, isGenerating: false },
-
-    // --- 日本 (Japan) ---
-    { id: 'jp-1', url: 'https://ispace-inc.com', name: 'ispace', country: '日本', createdDate: '2023-11-28', dna: null, isGenerating: false },
-    { id: 'jp-2', url: 'https://astroscale.com', name: 'Astroscale', country: '日本', createdDate: '2024-01-05', dna: null, isGenerating: false },
 ];
 
 interface DataContextType {

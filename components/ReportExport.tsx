@@ -1,5 +1,9 @@
 
 
+
+
+
+
 import React, { useState } from 'react';
 import { Card } from './common/Card';
 import { Button } from './common/Button';
@@ -31,38 +35,8 @@ export const ReportExport: React.FC = () => {
     // Helper: Convert Report Object to Markdown String
     const generateMarkdown = (report: Report): string => {
         const c = report.content;
-        
-        let summaryText = "";
-        if (c.executiveSummary) {
-             summaryText = `### 总体评价：${c.executiveSummary.verdict}\n\n`;
-             if(c.executiveSummary.key_takeaways) {
-                summaryText += c.executiveSummary.key_takeaways.map(k => `- **${k.conclusion}** (置信度: ${k.confidence})\n  > 证据: ${k.evidence_ref}`).join('\n');
-             }
-        }
-
-        let riskText = "";
-        if (c.riskMatrix) {
-            riskText = `
-**行为风险**:
-${(c.riskMatrix.behavioral_risks || []).map(r => `- ${r}`).join('\n')}
-
-**结构风险**:
-${(c.riskMatrix.structural_risks || []).map(r => `- ${r}`).join('\n')}
-
-**安全风险**:
-${(c.riskMatrix.security_risks || []).map(r => `- ${r}`).join('\n')}
-            `.trim();
-        }
-
-        let recText = "";
-        if (c.policyRecommendations) {
-            recText = c.policyRecommendations.map(r => `
-### ${r.action_item}
-- **针对对象**: ${r.target_group}
-- **紧迫性**: ${r.urgency}
-- **理由**: ${r.rationale}
-            `).join('\n');
-        }
+        const recs = c.policyRecommendations || { immediate: [], midTerm: [], longTerm: [] };
+        const glossary = c.glossary || {};
 
         return `
 # ${report.title}
@@ -71,65 +45,57 @@ ${(c.riskMatrix.security_risks || []).map(r => `- ${r}`).join('\n')}
 
 ---
 
-## 1. 核心结论摘要
-${summaryText}
+## 1. 核心结论摘要（决策者三句话版本）
+${c.executiveSummary || "暂无"}
 
-## 2. 政策有效性评估
-- **目标契合度**: ${c.policyEffectiveness.goalAlignment}
-- **影响强度**: ${c.policyEffectiveness.impactStrength}
-- **意外效应**: ${c.policyEffectiveness.unintendedConsequences}
+## 2. 政策目标匹配度评估
+### 2.1 目标对齐度
+${c.policyEffectiveness?.alignment || "N/A"}
 
-## 3. 涌现模式分析
-${c.emergentPatterns.map(p => `### ${p.patternName}\n${p.analysis}`).join('\n\n')}
+### 2.2 政策影响强度
+${c.policyEffectiveness?.impactStrength || "N/A"}
 
-## 4. 风险矩阵
-${riskText}
+### 2.3 非预期效应与偏差
+${c.policyEffectiveness?.deviations || "N/A"}
 
-## 5. 决策建议
-${recText}
+## 3. 趋势模式 (Emergent Patterns)
+${(c.emergentPatterns || []).map((p, i) => `### 3.${i+1} ${p.patternName}\n${p.mechanism}`).join('\n\n')}
 
-## 6. 行业前景展望
-**潜在风险**:
-${c.industryOutlook.emergingRisks.map(r => `- ${r}`).join('\n')}
+## 4. 产业结构展望与推演
+### 4.1 新机会
+${(c.industryOutlook?.newOpportunities || []).map(o => `- ${o}`).join('\n')}
 
-**新兴机遇**:
-${c.industryOutlook.newOpportunities.map(o => `- ${o}`).join('\n')}
+### 4.2 新风险
+${(c.industryOutlook?.newRisks || []).map(r => `- ${r}`).join('\n')}
 
-**市场结构预测**:
-${c.industryOutlook.marketStructurePrediction}
+### 4.3 市场结构预测
+${c.industryOutlook?.marketStructurePrediction || "N/A"}
 
-## 7. 微观企业响应
-${c.microAnalysis.map(m => `### ${m.companyName} (影响: ${m.impactScore})
-- **预测反应**: ${m.predictedResponse}
-- **分析原理**: ${m.rationale}`).join('\n\n')}
+## 5. 企业微观分析 (Top Insights)
+${(c.microAnalysis || []).map((m, i) => `### 5.${i+1} ${m.companyName} (影响: ${m.impactScore})\n- **推演行为**: ${m.behaviorAnalysis}\n- **政策含义**: ${m.policyImplication}`).join('\n\n')}
+
+## 6. 政策建议
+### 6.1 即时建议（0–6个月）
+${(recs.immediate || []).map(r => `- **${r.action}**: ${r.rationale}`).join('\n')}
+
+### 6.2 中期建议（6–24个月）
+${(recs.midTerm || []).map(r => `- **${r.action}**: ${r.rationale}`).join('\n')}
+
+### 6.3 长期建议（24个月以上）
+${(recs.longTerm || []).map(r => `- **${r.action}**: ${r.rationale}`).join('\n')}
+
+## 附录：术语对照表
+| 原始术语 | 中文释义 |
+| :--- | :--- |
+${Object.entries(glossary).map(([k, v]) => `| ${k} | ${v} |`).join('\n')}
         `.trim();
     };
 
     // Helper: Convert Report Object to Plain Text String
     const generateTxt = (report: Report): string => {
         const c = report.content;
-
-        let summaryText = "";
-         if (c.executiveSummary) {
-             summaryText = `[总体评价]：${c.executiveSummary.verdict}\n`;
-             if(c.executiveSummary.key_takeaways) {
-                summaryText += c.executiveSummary.key_takeaways.map(k => `- ${k.conclusion} [${k.confidence}]\n  证据: ${k.evidence_ref}`).join('\n');
-             }
-        }
-
-        let riskText = "";
-        if (c.riskMatrix) {
-            riskText = `
-[行为风险]:
-${(c.riskMatrix.behavioral_risks || []).map(r => `- ${r}`).join('\n')}
-
-[结构风险]:
-${(c.riskMatrix.structural_risks || []).map(r => `- ${r}`).join('\n')}
-
-[安全风险]:
-${(c.riskMatrix.security_risks || []).map(r => `- ${r}`).join('\n')}
-            `.trim();
-        }
+        const recs = c.policyRecommendations || { immediate: [], midTerm: [], longTerm: [] };
+        const glossary = c.glossary || {};
 
         return `
 ================================================================
@@ -138,34 +104,47 @@ ${report.title}
 日期: ${report.date}
 参演企业数: ${report.companyCount}
 
-[核心结论摘要]
-${summaryText}
+[1. 核心结论摘要（决策者三句话版本）]
+${c.executiveSummary || "暂无"}
 
-[政策有效性评估]
-- 目标契合度: ${c.policyEffectiveness.goalAlignment}
-- 影响强度: ${c.policyEffectiveness.impactStrength}
-- 意外效应: ${c.policyEffectiveness.unintendedConsequences}
+[2. 政策目标匹配度评估]
+* 目标对齐度:
+${c.policyEffectiveness?.alignment || "N/A"}
 
-[风险矩阵]
-${riskText}
+* 政策影响强度:
+${c.policyEffectiveness?.impactStrength || "N/A"}
 
-[涌现模式分析]
-${c.emergentPatterns.map(p => `* ${p.patternName}: ${p.analysis}`).join('\n')}
+* 非预期效应与偏差:
+${c.policyEffectiveness?.deviations || "N/A"}
 
-[决策建议]
-${(c.policyRecommendations || []).map(r => `* ${r.action_item} (${r.target_group}, ${r.urgency}) - ${r.rationale}`).join('\n')}
+[3. 趋势模式]
+${(c.emergentPatterns || []).map((p, i) => `${i+1}. ${p.patternName}\n   机制: ${p.mechanism}`).join('\n')}
 
-[行业前景展望]
-* 潜在风险:
-${c.industryOutlook.emergingRisks.map(r => `  - ${r}`).join('\n')}
-* 新兴机遇:
-${c.industryOutlook.newOpportunities.map(o => `  - ${o}`).join('\n')}
-* 市场结构预测: ${c.industryOutlook.marketStructurePrediction}
+[4. 产业结构展望]
+* 新机会:
+${(c.industryOutlook?.newOpportunities || []).map(o => `  - ${o}`).join('\n')}
+* 新风险:
+${(c.industryOutlook?.newRisks || []).map(r => `  - ${r}`).join('\n')}
+* 市场结构预测: 
+${c.industryOutlook?.marketStructurePrediction || "N/A"}
 
-[微观企业响应]
-${c.microAnalysis.map(m => `* ${m.companyName} (影响: ${m.impactScore})
-  - 预测反应: ${m.predictedResponse}
-  - 分析原理: ${m.rationale}`).join('\n')}
+[5. 企业微观分析]
+${(c.microAnalysis || []).map((m, i) => `${i+1}. ${m.companyName} (影响: ${m.impactScore})
+   推演行为: ${m.behaviorAnalysis}
+   政策含义: ${m.policyImplication}`).join('\n')}
+
+[6. 政策建议]
+[即时建议 0-6月]
+${(recs.immediate || []).map(r => `* ${r.action}: ${r.rationale}`).join('\n')}
+
+[中期建议 6-24月]
+${(recs.midTerm || []).map(r => `* ${r.action}: ${r.rationale}`).join('\n')}
+
+[长期建议 24月+]
+${(recs.longTerm || []).map(r => `* ${r.action}: ${r.rationale}`).join('\n')}
+
+[附录: 术语对照]
+${Object.entries(glossary).map(([k, v]) => `${k} = ${v}`).join('\n')}
         `.trim();
     };
 

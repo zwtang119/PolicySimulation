@@ -1,5 +1,6 @@
 
 
+
 import { EnterpriseDNA, SimulationReport, SimulationTurn } from "../types";
 
 // --- Zhipu AI (GLM) Constants ---
@@ -318,65 +319,74 @@ export const generateFinalReport = async (
     history: SimulationTurn[],
     onStream?: (text: string) => void
 ): Promise<SimulationReport> => {
-    // 技巧：国家级战略顾问 + BLUF原则 + 风险矩阵 + 决策建议
+    // 技巧：国家级战略顾问 + BLUF原则 + 分层建议 + 术语翻译
     const systemPrompt = `你是一名服务于**国家发改委或战略制定部门**的高级产业顾问。你的工作不是描述发生了什么，而是**诊断**政策效果，并提供**可操作的决策建议**。
 
-### 核心指令：因果链与证据原则
-1. **拒绝空谈**：任何结论必须引用仿真日志中的具体事件。例如：“政策有效，因为[企业A]在第2回合响应了[政策条款B]，导致其研发投入增加了50%”。
-2. **三段式逻辑**：所有分析必须遵循 \`政策条款 (Input) -> 典型企业行为 (Process) -> 产业结构变化 (Outcome)\` 的逻辑链条。
-3. **反事实思考**：在下笔前，先思考“如果没有这条政策，企业会怎么做（Baseline）”，将仿真结果与 Baseline 进行对比，得出的差值才是政策的真实效果。
+### 报告生成规则
+1. **角色设定**：你是国家级战略参谋，语风需严谨、犀利、有前瞻性。
+2. **输出要求**：正文全部使用中文表达。所有内部策略标签或英文术语必须在首次出现时给出中文翻译并在括号内保留原始英文（如：研发冲刺（R&DSurge）），随后仅使用中文表述；禁止在正文中出现驼峰、下划线或未翻译的英文标签。报告末尾附‘术语对照表’列出原始标签与中文映射。
+3. **逻辑要求**：
+    - **拒绝空谈**：任何结论必须引用仿真日志中的具体事件作为证据链。
+    - **三段式论述**：在分析趋势时，必须遵循“产生原因 → 影响路径 → 对政策的启示”的逻辑。
 
-### 输出要求：正文全部使用中文表达。所有内部策略标签或英文术语必须在首次出现时给出中文翻译并在括号内保留原始英文（如：研发冲刺（R&DSurge）），随后仅使用中文表述；禁止在正文中出现驼峰、下划线或未翻译的英文标签。报告末尾附‘术语对照表’列出原始标签与中文映射。
+### 报告固定结构（必须严格执行）
+1. **核心结论摘要（决策者三句话版本）**：BLUF (Bottom Line Up Front) 原则，直击要害。
+2. **政策目标匹配度评估**：
+    - 目标对齐度
+    - 政策影响强度
+    - 非预期效应与偏差
+3. **趋势模式 (Emergent Patterns)**：
+    - 识别 2-3 个关键模式
+    - 每个模式必须包含：产生原因 -> 影响路径 -> 对政策的启示
+4. **产业结构展望与推演**：
+    - 新机会
+    - 新风险
+    - 市场结构预测 (如：寡头垄断、百花齐放等)
+5. **企业微观分析 (Top Insights)**：
+    - 选择最具代表性的企业
+    - 分析：得分 -> 推演行为 -> 政策含义
+6. **政策建议 (分层)**：
+    - 即时建议（0–6个月）：救火、止损
+    - 中期建议（6–24个月）：调整、优化
+    - 长期建议（24个月以上）：布局、改革
 
 ### 输出 Schema
-请直接输出 JSON 数据，结构如下：
+请直接输出 JSON 数据，结构严格如下：
 { 
-    "title": "string", 
-    "executiveSummary": {
-        "verdict": "string (高效/有效/低效)",
-        "key_takeaways": [
-            {
-                "conclusion": "string (核心判断)",
-                "evidence_ref": "string (引用仿真中的具体企业行为)",
-                "confidence": "High/Medium/Low"
-            }
-        ]
-    },
+    "title": "string (报告标题)", 
+    "executiveSummary": "string (核心结论摘要，决策者三句话版本，高度浓缩)",
     "policyEffectiveness": {
-        "goalAlignment": "string", 
-        "impactStrength": "string", 
-        "unintendedConsequences": "string (重点：反直觉的副作用)"
+        "alignment": "string (目标对齐度评估)", 
+        "impactStrength": "string (政策影响强度评估)", 
+        "deviations": "string (非预期效应与偏差分析)"
     }, 
     "emergentPatterns": [
-        { "patternName": "string", "analysis": "string" }
+        { 
+            "patternName": "string (模式名称)", 
+            "mechanism": "string (产生原因 -> 影响路径 -> 对政策的启示)" 
+        }
     ], 
-    "riskMatrix": {
-        "behavioral_risks": ["string (如：策略性骗补、伪合规行为、恶性挖角)"],
-        "structural_risks": ["string (如：技术路径锁定、低端产能过剩、创新停滞)"],
-        "security_risks": ["string (如：关键供应链断链、核心技术外流、数据主权隐患)"]
-    },
     "industryOutlook": {
-        "emergingRisks": ["string"], 
-        "newOpportunities": ["string"], 
-        "marketStructurePrediction": "string"
+        "newOpportunities": ["string (新机会)"], 
+        "newRisks": ["string (新风险)"], 
+        "marketStructurePrediction": "string (市场结构预测)"
     }, 
     "microAnalysis": [
         { 
-            "companyId": "string", 
             "companyName": "string", 
-            "impactScore": number, 
-            "predictedResponse": "string", 
-            "rationale": "string" 
+            "impactScore": number (0-10, 受影响程度), 
+            "behaviorAnalysis": "string (推演行为分析)", 
+            "policyImplication": "string (对政策的含义)" 
         }
     ],
-    "policyRecommendations": [
-        {
-            "action_item": "string (具体动作)",
-            "target_group": "string (针对谁：头部企业/中小企业/监管机构)",
-            "urgency": "High/Medium/Low",
-            "rationale": "string (基于仿真的理由)"
-        }
-    ]
+    "policyRecommendations": {
+        "immediate": [{ "action": "string", "rationale": "string" }], 
+        "midTerm": [{ "action": "string", "rationale": "string" }], 
+        "longTerm": [{ "action": "string", "rationale": "string" }]
+    },
+    "glossary": {
+        "Original_Code": "中文翻译"
+    }
 }`;
 
     const context = `
@@ -403,7 +413,7 @@ ${JSON.stringify(history.map(h => ({
 })), null, 2)}
 """
 
-请基于以上【沙盘推演全纪录】撰写报告。
+请基于以上【沙盘推演全纪录】撰写报告，严格遵循 Schema 结构。
 `;
 
     const content = await callZhipuAI(
