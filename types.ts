@@ -1,4 +1,5 @@
 
+
 export type AppView = 
     | 'login' 
     | 'forgot-password'
@@ -99,6 +100,12 @@ export interface AgentDecision {
     companyId: string;
     companyName: string;
     memo: StrategicMemo;
+    next_state?: { // [状态更新]: 预测下一轮的状态
+        cash_flow_status: string; // Critical/Stable/Abundant
+        market_position: string; // Leader/Challenger/Niche/Laggard
+        policy_compliance_score: number; // 0-100
+        tech_readiness_level: number; // 1-9
+    };
 }
 
 export interface SimulationTurn {
@@ -109,7 +116,15 @@ export interface SimulationTurn {
 
 export interface SimulationReport {
     title: string;
-    executiveSummary: string;
+    // [Updated] 结构化摘要
+    executiveSummary: {
+        verdict: string; // 高效/有效/低效
+        key_takeaways: {
+            conclusion: string;
+            evidence_ref: string;
+            confidence: "High" | "Medium" | "Low";
+        }[];
+    };
     policyEffectiveness: {
         goalAlignment: string;
         impactStrength: string;
@@ -119,16 +134,29 @@ export interface SimulationReport {
         patternName: string;
         analysis: string;
     }[];
+    // [New] 风险矩阵
+    riskMatrix: {
+        behavioral_risks: string[]; // 行为风险
+        structural_risks: string[]; // 结构风险
+        security_risks: string[];   // 安全风险
+    };
     industryOutlook: {
         emergingRisks: string[];
         newOpportunities: string[];
-        marketStructurePrediction: string; // 市场格局预测 (e.g., 寡头垄断)
+        marketStructurePrediction: string; // 市场格局预测
     };
     microAnalysis: {
         companyId: string;
         companyName: string;
         impactScore: number;
         predictedResponse: string;
+        rationale: string;
+    }[];
+    // [New] 政策建议
+    policyRecommendations: {
+        action_item: string;
+        target_group: string;
+        urgency: "High" | "Medium" | "Low";
         rationale: string;
     }[];
     turnHistory: SimulationTurn[];
