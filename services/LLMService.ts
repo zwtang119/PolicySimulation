@@ -1,7 +1,7 @@
 import { EnterpriseDNA, SimulationReport, SimulationTurn } from "../types";
 
 // --- Zhipu AI (GLM) Constants ---
-const MODEL_HIGH_INTELLECT = "glm-4.6"; // 旗舰模型：用于复杂推演
+const MODEL_HIGH_INTELLECT = "glm-4.5-air"; // 旗舰模型：用于复杂推演
 const MODEL_FAST = "glm-4-flash";       // 高速模型：用于搜索与批处理
 
 const API_KEY = process.env.API_KEY;
@@ -149,7 +149,7 @@ export const generateCompanyDna = async (url: string): Promise<EnterpriseDNA> =>
 
 export const analyzePolicyStructure = async (policyText: string): Promise<void> => {
     // 降敏：侧重“文本摘要”
-    await callZhipuAI(MODEL_FAST, [
+    await callZhipuAI(MODEL_HIGH_INTELLECT, [
         { role: "system", content: "你是一个文本摘要助手。请提取以下商业文件的关键要素。" },
         { role: "user", content: `文件内容：${policyText.substring(0, 2000)}...` }
     ]);
@@ -174,7 +174,7 @@ export const runSimulationTurn = async (
 
     const context = `环境信息摘要: ${policyText.substring(0, 800)}...\n企业经营档案: ${JSON.stringify(companies.map((c:any) => ({n:c.name, d:c.dna})))}\n过往经营记录: ${JSON.stringify(history)}`;
 
-    const content = await callZhipuAI(MODEL_FAST, [
+    const content = await callZhipuAI(MODEL_HIGH_INTELLECT, [
         { role: "system", content: systemPrompt },
         { role: "user", content: context }
     ], true);
@@ -202,7 +202,7 @@ export const generateFinalReport = async (
     JSON结构: { title, executiveSummary, policyEffectiveness: {goalAlignment, impactStrength, unintendedConsequences}, emergentPatterns: [{patternName, analysis}], industryOutlook: {emergingRisks[], newOpportunities[], marketStructurePrediction}, microAnalysis: [{companyId, companyName, impactScore, predictedResponse, rationale}] }`;
 
     const content = await callZhipuAI(
-        MODEL_FAST, 
+        MODEL_HIGH_INTELLECT, 
         [
             { role: "system", content: systemPrompt },
             { role: "user", content: `背景信息: ${policyText.substring(0, 500)}...\n模拟数据: ${JSON.stringify(history)}` }
