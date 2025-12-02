@@ -1,3 +1,5 @@
+
+
 import React, { useState } from 'react';
 import { Card } from './common/Card';
 import { Button } from './common/Button';
@@ -29,6 +31,39 @@ export const ReportExport: React.FC = () => {
     // Helper: Convert Report Object to Markdown String
     const generateMarkdown = (report: Report): string => {
         const c = report.content;
+        
+        let summaryText = "";
+        if (c.executiveSummary) {
+             summaryText = `### 总体评价：${c.executiveSummary.verdict}\n\n`;
+             if(c.executiveSummary.key_takeaways) {
+                summaryText += c.executiveSummary.key_takeaways.map(k => `- **${k.conclusion}** (置信度: ${k.confidence})\n  > 证据: ${k.evidence_ref}`).join('\n');
+             }
+        }
+
+        let riskText = "";
+        if (c.riskMatrix) {
+            riskText = `
+**行为风险**:
+${(c.riskMatrix.behavioral_risks || []).map(r => `- ${r}`).join('\n')}
+
+**结构风险**:
+${(c.riskMatrix.structural_risks || []).map(r => `- ${r}`).join('\n')}
+
+**安全风险**:
+${(c.riskMatrix.security_risks || []).map(r => `- ${r}`).join('\n')}
+            `.trim();
+        }
+
+        let recText = "";
+        if (c.policyRecommendations) {
+            recText = c.policyRecommendations.map(r => `
+### ${r.action_item}
+- **针对对象**: ${r.target_group}
+- **紧迫性**: ${r.urgency}
+- **理由**: ${r.rationale}
+            `).join('\n');
+        }
+
         return `
 # ${report.title}
 **日期**: ${report.date}
@@ -37,7 +72,7 @@ export const ReportExport: React.FC = () => {
 ---
 
 ## 1. 核心结论摘要
-${c.executiveSummary}
+${summaryText}
 
 ## 2. 政策有效性评估
 - **目标契合度**: ${c.policyEffectiveness.goalAlignment}
@@ -47,7 +82,13 @@ ${c.executiveSummary}
 ## 3. 涌现模式分析
 ${c.emergentPatterns.map(p => `### ${p.patternName}\n${p.analysis}`).join('\n\n')}
 
-## 4. 行业前景展望
+## 4. 风险矩阵
+${riskText}
+
+## 5. 决策建议
+${recText}
+
+## 6. 行业前景展望
 **潜在风险**:
 ${c.industryOutlook.emergingRisks.map(r => `- ${r}`).join('\n')}
 
@@ -57,7 +98,7 @@ ${c.industryOutlook.newOpportunities.map(o => `- ${o}`).join('\n')}
 **市场结构预测**:
 ${c.industryOutlook.marketStructurePrediction}
 
-## 5. 微观企业响应
+## 7. 微观企业响应
 ${c.microAnalysis.map(m => `### ${m.companyName} (影响: ${m.impactScore})
 - **预测反应**: ${m.predictedResponse}
 - **分析原理**: ${m.rationale}`).join('\n\n')}
@@ -67,6 +108,29 @@ ${c.microAnalysis.map(m => `### ${m.companyName} (影响: ${m.impactScore})
     // Helper: Convert Report Object to Plain Text String
     const generateTxt = (report: Report): string => {
         const c = report.content;
+
+        let summaryText = "";
+         if (c.executiveSummary) {
+             summaryText = `[总体评价]：${c.executiveSummary.verdict}\n`;
+             if(c.executiveSummary.key_takeaways) {
+                summaryText += c.executiveSummary.key_takeaways.map(k => `- ${k.conclusion} [${k.confidence}]\n  证据: ${k.evidence_ref}`).join('\n');
+             }
+        }
+
+        let riskText = "";
+        if (c.riskMatrix) {
+            riskText = `
+[行为风险]:
+${(c.riskMatrix.behavioral_risks || []).map(r => `- ${r}`).join('\n')}
+
+[结构风险]:
+${(c.riskMatrix.structural_risks || []).map(r => `- ${r}`).join('\n')}
+
+[安全风险]:
+${(c.riskMatrix.security_risks || []).map(r => `- ${r}`).join('\n')}
+            `.trim();
+        }
+
         return `
 ================================================================
 ${report.title}
@@ -75,15 +139,21 @@ ${report.title}
 参演企业数: ${report.companyCount}
 
 [核心结论摘要]
-${c.executiveSummary}
+${summaryText}
 
 [政策有效性评估]
 - 目标契合度: ${c.policyEffectiveness.goalAlignment}
 - 影响强度: ${c.policyEffectiveness.impactStrength}
 - 意外效应: ${c.policyEffectiveness.unintendedConsequences}
 
+[风险矩阵]
+${riskText}
+
 [涌现模式分析]
 ${c.emergentPatterns.map(p => `* ${p.patternName}: ${p.analysis}`).join('\n')}
+
+[决策建议]
+${(c.policyRecommendations || []).map(r => `* ${r.action_item} (${r.target_group}, ${r.urgency}) - ${r.rationale}`).join('\n')}
 
 [行业前景展望]
 * 潜在风险:
