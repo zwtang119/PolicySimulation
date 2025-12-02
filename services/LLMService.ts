@@ -196,8 +196,7 @@ export const generateFinalReport = async (
     const systemPrompt = `你是一名独立的商业咨询顾问。请撰写一份《行业市场分析报告》。
     要求：
     1. 语言风格客观、理性，仅使用商业术语。
-    2. 避免任何政治评价或敏感词汇。
-    3. 关注数据与微观企业行为。
+    2. 关注数据与微观企业行为。
     
     输出格式：包含JSON字段的Markdown文本。
     JSON结构: { title, executiveSummary, policyEffectiveness: {goalAlignment, impactStrength, unintendedConsequences}, emergentPatterns: [{patternName, analysis}], industryOutlook: {emergingRisks[], newOpportunities[], marketStructurePrediction}, microAnalysis: [{companyId, companyName, impactScore, predictedResponse, rationale}] }`;
