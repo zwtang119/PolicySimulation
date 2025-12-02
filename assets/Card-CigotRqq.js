@@ -1,1 +1,0 @@
-import{j as s}from"./index-DGHBnWza.js";const o=({title:e,children:r,className:d})=>s.jsxs("div",{className:`bg-white shadow-lg rounded-lg overflow-hidden ${d}`,children:[s.jsx("div",{className:"px-4 py-3 border-b border-gray-200",children:s.jsx("h3",{className:"text-md font-semibold text-gray-800",children:e})}),s.jsx("div",{className:"p-4",children:r})]});export{o as C};
