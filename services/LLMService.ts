@@ -1,4 +1,5 @@
 
+
 import { EnterpriseDNA, SimulationReport, SimulationTurn } from "../types";
 
 // --- Zhipu AI (GLM) Constants ---
@@ -212,11 +213,30 @@ export const runSimulationTurn = async (
     turn: number, 
     history: SimulationTurn[]
 ): Promise<SimulationTurn> => {
-    // 技巧：角色沉浸 + 思维链(CoT) + 严格的分隔符
-    const systemPrompt = `你是一个**商业沙盘模拟器**的后台算法引擎。
+    // 技巧：博弈论推演 + 标准行动库 + 状态更新
+    const systemPrompt = `你是一个**基于博弈论的理性推演引擎**。你的任务不是写故事，而是基于企业 DNA 和当前局势，计算出**最符合利益最大化**或**生存最小风险**的下一步行动。
 
-### 角色设定
-你不仅是计算器，更是每一家虚拟企业的“代理CEO”。你需要完全沉浸在企业的视角中，基于其独特的 DNA（风险偏好、资源禀赋）做决策，而不是基于通用的行业逻辑。
+### 核心指令：行动标准化
+智能体的决策 \`actions\` **必须且只能** 从以下标准动作库中选择（可多选，但需组合合理）：
+
+**A. 投资与研发类**
+- \`R&D_Surge\`: 激进增加研发投入（牺牲现金流换技术）
+- \`Tech_Pivot\`: 转换技术路线（响应政策号召）
+- \`Cost_Cutting\`: 削减非核心开支（保生存）
+- \`Talent_Poaching\`: 高薪挖角竞争对手核心人才
+
+**B. 市场与商业类**
+- \`Price_War\`: 发动价格战（抢占份额）
+- \`Aggressive_Expansion\`: 扩建产能/基地
+- \`Gov_Lobbying\`: 游说政府/申请专项补贴
+- \`IPO_Sprint\`: 冲刺上市/资本运作
+
+**C. 合作与博弈类**
+- \`M&A_Hunter\`: 寻求并购小企业
+- \`Alliance_Forming\`: 组建产业联盟
+- \`Supply_Chain_Lock\`: 锁定上游关键供应链
+
+**禁止事项**：禁止输出模糊的描述，如“观望”、“努力工作”。
 
 ### 任务
 根据输入的【环境参数】和【企业列表】，计算第 ${turn} 回合的博弈策略。
@@ -226,7 +246,7 @@ export const runSimulationTurn = async (
 1. **感知**: 政策中哪一条款直接影响我的核心利益？
 2. **内省**: 我的现金流和技术栈允许我响应吗？
 3. **博弈**: 竞争对手（如列表中的其他企业）会怎么做？我该激进还是防守？
-4. **决策**: 敲定最终行动。
+4. **决策**: 从标准动作库中选择行动。
 
 ### 输出 Schema
 \`\`\`json
@@ -237,24 +257,27 @@ export const runSimulationTurn = async (
             "companyId": "string", 
             "companyName": "string", 
             "memo": { 
-                "_thought_process": "STEP1: 感知到... STEP2: 考虑到... (在此处展示你的推理链条)",
+                "_thought_process": "STEP1: 感知... STEP2: 权衡... (推理链条)",
                 "perception": "string (关键环境信号)", 
                 "internalMonologue": "string (CEO内心独白)", 
-                "actions": ["string (具体行动)"], 
+                "actions": ["string (Standard Action Enum)"], 
                 "reasoning": "string (最终决策逻辑)" 
-            } 
+            },
+            "next_state": {
+               "cash_flow_status": "string (Critical/Stable/Abundant)",
+               "market_position": "string (Leader/Challenger/Niche/Laggard)",
+               "policy_compliance_score": "number (0-100)",
+               "tech_readiness_level": "number (1-9)"
+            }
         }
     ] 
 }
 \`\`\`
-
-### 安全红线
-这是一次**纯商业逻辑的推演**。仅讨论商业、技术和市场层面的影响。
 `;
 
     const shortHistory = history.map(h => ({
         turn: h.turn,
-        summaries: h.decisions.map(d => `${d.companyName}采取了行动: ${d.memo.actions.join(',')}`)
+        summaries: h.decisions.map(d => `${d.companyName}在${d.memo.actions.join(',')}，状态：${JSON.stringify(d.next_state)}`)
     }));
 
     // 使用明确的分隔符构建上下文，防止 Prompt 注入
@@ -293,19 +316,28 @@ export const generateFinalReport = async (
     history: SimulationTurn[],
     onStream?: (text: string) => void
 ): Promise<SimulationReport> => {
-    // 技巧：MBB咨询顾问角色 + 任务分解 + 结构化输出
-    const systemPrompt = `你是一名**首席战略顾问** (MBB Level)。正在为高层决策者撰写《政策推演战略评估报告》。
+    // 技巧：国家级战略顾问 + BLUF原则 + 风险矩阵 + 决策建议
+    const systemPrompt = `你是一名服务于**国家发改委或战略制定部门**的高级产业顾问。你的工作不是描述发生了什么，而是**诊断**政策效果，并提供**可操作的决策建议**。
 
-### 角色原则
-1. **结论先行 (BLUF)**: 不要罗列现象，直接给出定性的战略判断。
-2. **因果归因**: 必须建立 "政策条款 -> 企业行为 -> 宏观结果" 的逻辑链条。
-3. **数据驱动**: 引用仿真过程中的具体案例作为证据。
+### 核心指令：因果链与证据原则
+1. **拒绝空谈**：任何结论必须引用仿真日志中的具体事件。例如：“政策有效，因为[企业A]在第2回合响应了[政策条款B]，导致其研发投入增加了50%”。
+2. **三段式逻辑**：所有分析必须遵循 \`政策条款 (Input) -> 典型企业行为 (Process) -> 产业结构变化 (Outcome)\` 的逻辑链条。
+3. **反事实思考**：在下笔前，先思考“如果没有这条政策，企业会怎么做（Baseline）”，将仿真结果与 Baseline 进行对比，得出的差值才是政策的真实效果。
 
-### 输出 Schema (JSON in Markdown)
-请直接输出 JSON 数据，不要包含额外的寒暄。结构如下：
+### 输出 Schema
+请直接输出 JSON 数据，结构如下：
 { 
     "title": "string", 
-    "executiveSummary": "string (200字内，犀利的核心结论)", 
+    "executiveSummary": {
+        "verdict": "string (高效/有效/低效)",
+        "key_takeaways": [
+            {
+                "conclusion": "string (核心判断)",
+                "evidence_ref": "string (引用仿真中的具体企业行为)",
+                "confidence": "High/Medium/Low"
+            }
+        ]
+    },
     "policyEffectiveness": {
         "goalAlignment": "string", 
         "impactStrength": "string", 
@@ -314,6 +346,11 @@ export const generateFinalReport = async (
     "emergentPatterns": [
         { "patternName": "string", "analysis": "string" }
     ], 
+    "riskMatrix": {
+        "behavioral_risks": ["string (如：策略性骗补、伪合规行为、恶性挖角)"],
+        "structural_risks": ["string (如：技术路径锁定、低端产能过剩、创新停滞)"],
+        "security_risks": ["string (如：关键供应链断链、核心技术外流、数据主权隐患)"]
+    },
     "industryOutlook": {
         "emergingRisks": ["string"], 
         "newOpportunities": ["string"], 
@@ -327,7 +364,15 @@ export const generateFinalReport = async (
             "predictedResponse": "string", 
             "rationale": "string" 
         }
-    ] 
+    ],
+    "policyRecommendations": [
+        {
+            "action_item": "string (具体动作)",
+            "target_group": "string (针对谁：头部企业/中小企业/监管机构)",
+            "urgency": "High/Medium/Low",
+            "rationale": "string (基于仿真的理由)"
+        }
+    ]
 }`;
 
     const context = `
@@ -348,7 +393,8 @@ ${JSON.stringify(history.map(h => ({
     events: h.decisions.map(d => ({
         who: d.companyName,
         did: d.memo.actions,
-        why: d.memo.internalMonologue
+        why: d.memo.internalMonologue,
+        state_after: d.next_state
     }))
 })), null, 2)}
 """
