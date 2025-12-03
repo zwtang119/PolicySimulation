@@ -1,4 +1,4 @@
-import{u as w,r as $,j as t,B as O}from"./index-m148XmJS.js";import{C as R}from"./Card-pL9rBShW.js";const C=()=>{const{reports:c}=w(),[i,p]=$.useState([]),[g,j]=$.useState(!1),[x,b]=$.useState("md"),f=n=>{i.includes(n)?p(i.filter(s=>s!==n)):p([...i,n])},N=()=>{i.length===c.length?p([]):p(c.map(n=>n.id))},v=n=>{var m,d,l,r,y,h;const s=n.content,a=s.policyRecommendations||{immediate:[],midTerm:[],longTerm:[]},u=s.glossary||{};return`
+import{u as w,r as $,j as t,B as O}from"./index-Bev9fqI6.js";import{C as R}from"./Card-BdiMWcKR.js";const C=()=>{const{reports:c}=w(),[i,p]=$.useState([]),[g,j]=$.useState(!1),[x,b]=$.useState("md"),f=n=>{i.includes(n)?p(i.filter(s=>s!==n)):p([...i,n])},N=()=>{i.length===c.length?p([]):p(c.map(n=>n.id))},v=n=>{var m,d,l,r,y,h;const s=n.content,a=s.policyRecommendations||{immediate:[],midTerm:[],longTerm:[]},u=s.glossary||{};return`
 # ${n.title}
 **日期**: ${n.date}
 **参演企业数**: ${n.companyCount}
